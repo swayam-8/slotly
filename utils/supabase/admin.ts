@@ -94,7 +94,7 @@ const deletePriceRecord = async (price: Stripe.Price) => {
 
 const upsertCustomerToSupabase = async (uuid: string, customerId: string) => {
   const { error: upsertError } = await supabaseAdmin
-    .from('customers')
+    .from('stripe_customers')
     .upsert([{ id: uuid, stripe_customer_id: customerId }]);
 
   if (upsertError)
@@ -121,7 +121,7 @@ const createOrRetrieveCustomer = async ({
   // Check if the customer already exists in Supabase
   const { data: existingSupabaseCustomer, error: queryError } =
     await supabaseAdmin
-      .from('customers')
+      .from('stripe_customers')
       .select('*')
       .eq('id', uuid)
       .maybeSingle();
@@ -154,7 +154,7 @@ const createOrRetrieveCustomer = async ({
     // If Supabase has a record but doesn't match Stripe, update Supabase record
     if (existingSupabaseCustomer.stripe_customer_id !== stripeCustomerId) {
       const { error: updateError } = await supabaseAdmin
-        .from('customers')
+        .from('stripe_customers')
         .update({ stripe_customer_id: stripeCustomerId })
         .eq('id', uuid);
 
@@ -215,7 +215,7 @@ const manageSubscriptionStatusChange = async (
 ) => {
   // Get customer's UUID from mapping table.
   const { data: customerData, error: noCustomerError } = await supabaseAdmin
-    .from('customers')
+    .from('stripe_customers')
     .select('id')
     .eq('stripe_customer_id', customerId)
     .single();

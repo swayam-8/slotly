@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getURL, getErrorRedirect, getStatusRedirect } from 'utils/helpers';
 import { getAuthTypes } from 'utils/auth-helpers/settings';
+import { getPostAuthPath } from '@/utils/businesses/access';
 
 function isValidEmail(email: string) {
   var regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -151,7 +152,21 @@ export async function signInWithPassword(formData: FormData) {
     );
   } else if (data.user) {
     cookieStore.set('preferredSignInView', 'password_signin', { path: '/' });
-    redirectPath = getStatusRedirect('/', 'Success!', 'You are now signed in.');
+    try {
+      const destination = await getPostAuthPath(supabase, data.user.id);
+      redirectPath = getStatusRedirect(
+        destination,
+        'Success!',
+        'You are now signed in.'
+      );
+    } catch (error) {
+      console.error(error);
+      redirectPath = getErrorRedirect(
+        '/signin/password_signin',
+        'Could not load your business.',
+        'Please try signing in again.'
+      );
+    }
   } else {
     redirectPath = getErrorRedirect(
       '/signin/password_signin',
@@ -193,8 +208,22 @@ export async function signUp(formData: FormData) {
       'Sign up failed.',
       error.message
     );
-  } else if (data.session) {
-    redirectPath = getStatusRedirect('/', 'Success!', 'You are now signed in.');
+  } else if (data.session && data.user) {
+    try {
+      const destination = await getPostAuthPath(supabase, data.user.id);
+      redirectPath = getStatusRedirect(
+        destination,
+        'Success!',
+        'You are now signed in.'
+      );
+    } catch (error) {
+      console.error(error);
+      redirectPath = getErrorRedirect(
+        '/signin/signup',
+        'Could not load your business.',
+        'Please try signing in again.'
+      );
+    }
   } else if (
     data.user &&
     data.user.identities &&
@@ -248,11 +277,21 @@ export async function updatePassword(formData: FormData) {
       error.message
     );
   } else if (data.user) {
-    redirectPath = getStatusRedirect(
-      '/',
-      'Success!',
-      'Your password has been updated.'
-    );
+    try {
+      const destination = await getPostAuthPath(supabase, data.user.id);
+      redirectPath = getStatusRedirect(
+        destination,
+        'Success!',
+        'Your password has been updated.'
+      );
+    } catch (error) {
+      console.error(error);
+      redirectPath = getErrorRedirect(
+        '/signin/update_password',
+        'Could not load your business.',
+        'Your password was updated. Please sign in again.'
+      );
+    }
   } else {
     redirectPath = getErrorRedirect(
       '/signin/update_password',
