@@ -502,7 +502,15 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      business_directory: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          timezone: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_business_with_owner_membership: {
@@ -531,6 +539,13 @@ export interface Database {
           p_timezone: string
         }
         Returns: boolean
+      }
+      replace_staff_working_hours: {
+        Args: {
+          p_hours: Json
+          p_staff_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

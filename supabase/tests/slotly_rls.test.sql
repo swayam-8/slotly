@@ -1,6 +1,6 @@
 begin;
 
-select plan(19);
+select plan(20);
 
 -- Business identity columns are intentionally public; these checks focus on private tenant data.
 insert into auth.users (
@@ -255,6 +255,12 @@ select is(
    where id = '20000000-0000-0000-0000-000000000002'),
   1,
   'Anonymous users can read public business identity'
+);
+select is(
+  (select count(*)::integer from public.business_directory
+   where id = '20000000-0000-0000-0000-000000000002'),
+  1,
+  'Anonymous users can read the public business directory'
 );
 select throws_ok(
   $$select owner_id from public.businesses

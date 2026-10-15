@@ -2,7 +2,7 @@
 
 - [x] Setup
 - [ ] Data model
-- [ ] Services and availability
+- [x] Services and availability
 - [ ] Slot generation
 - [ ] Double-booking prevention
 - [ ] Payments
