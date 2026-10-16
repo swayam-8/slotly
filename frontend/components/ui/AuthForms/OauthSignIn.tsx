@@ -1,54 +1,64 @@
 'use client';
 
-import Button from '@/components/ui/Button';
-import { signInWithOAuth } from '@/utils/auth-helpers/client';
-import { type Provider } from '@supabase/supabase-js';
-import { Github } from 'lucide-react';
 import { useState } from 'react';
+import { Button, toastError } from '@/components/ui/primitives';
+import { signInWithGoogle } from '@/utils/auth-helpers/client';
 
-type OAuthProviders = {
-  name: Provider;
-  displayName: string;
-  icon: JSX.Element;
-};
+function GoogleMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-5"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.77 7.18l7.73 6C44.41 37.97 46.98 31.84 46.98 24.55Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.14 1.44-4.88 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"
+      />
+    </svg>
+  );
+}
 
 export default function OauthSignIn() {
-  const oAuthProviders: OAuthProviders[] = [
-    {
-      name: 'github',
-      displayName: 'GitHub',
-      icon: <Github className="h-5 w-5" />
-    }
-    /* Add desired OAuth providers here */
-  ];
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true); // Disable the button while the request is being handled
-    await signInWithOAuth(e);
-    setIsSubmitting(false);
-  };
+  async function handleGoogleSignIn() {
+    setIsSubmitting(true);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error('Google sign-in could not be started:', error);
+      toastError(
+        'Google sign-in is unavailable',
+        'Check that Google is enabled as an authentication provider in Supabase.'
+      );
+      setIsSubmitting(false);
+    }
+  }
 
   return (
-    <div className="mt-8">
-      {oAuthProviders.map((provider) => (
-        <form
-          key={provider.name}
-          className="pb-2"
-          onSubmit={(e) => handleSubmit(e)}
-        >
-          <input type="hidden" name="provider" value={provider.name} />
-          <Button
-            variant="slim"
-            type="submit"
-            className="w-full"
-            loading={isSubmitting}
-          >
-            <span className="mr-2">{provider.icon}</span>
-            <span>{provider.displayName}</span>
-          </Button>
-        </form>
-      ))}
-    </div>
+    <Button
+      type="button"
+      variant="outline"
+      className="w-full"
+      loading={isSubmitting}
+      onClick={handleGoogleSignIn}
+    >
+      {!isSubmitting && <GoogleMark />}
+      <span>Continue with Google</span>
+    </Button>
   );
 }

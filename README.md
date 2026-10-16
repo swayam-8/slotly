@@ -24,6 +24,24 @@ Tailwind CSS, based on
    Keep service-role and secret keys server-side; never commit environment files.
 4. Run `pnpm dev` and open [http://localhost:3000](http://localhost:3000).
 
+## Enable Google sign-in
+
+The sign-in and sign-up screens use Google OAuth through Supabase.
+
+1. Create an OAuth 2.0 Web client in Google Cloud Console.
+2. Add your Supabase project's callback URL to Google's **Authorized redirect
+   URIs**: `https://<project-ref>.supabase.co/auth/v1/callback`.
+3. In Supabase Dashboard, open **Authentication → Sign In / Providers → Google**,
+   enable Google, and enter the Google client ID and client secret.
+4. In Supabase **Authentication → URL Configuration**, add
+   `http://localhost:3000/auth/callback` to the redirect allow list. Add your
+   deployed site's `/auth/callback` URL when deploying.
+
+For local Supabase, copy `backend/supabase/.env.example` to
+`backend/supabase/.env`, fill in your Google OAuth client values, then run
+`pnpm supabase:restart`. The local Supabase provider uses the callback URL
+`http://127.0.0.1:54321/auth/v1/callback`.
+
 The app can connect to a hosted Supabase project, or you can run the local
 Supabase stack with Docker using `pnpm supabase:start`. The Supabase CLI
 configuration, migrations, and tests live in `backend/supabase/`. Use

@@ -62,8 +62,12 @@ export default async function SignIn({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-7xl items-center justify-center px-5 py-12 sm:px-8">
-      <div className="w-full max-w-md">
+    <div className="relative isolate mx-auto flex min-h-dvh items-center justify-center overflow-hidden bg-surface-muted/50 px-5 py-10 sm:px-8">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--brand)/0.08),transparent_55%)]"
+      />
+      <div className="w-full max-w-sm">
         <Link
           href="/"
           className="mx-auto mb-8 flex w-fit items-center gap-2.5 font-semibold"
@@ -74,17 +78,18 @@ export default async function SignIn({
           <span className="text-lg">Slotly</span>
         </Link>
         <div className="mb-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand">
-            Your business, in sync
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand">
+            A clearer day starts here
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             Welcome to Slotly
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in or create an account to manage your schedule.
+            Sign in to manage your business and team schedule.
           </p>
         </div>
         <Card
+          description="Your workspace for services, people, and working hours."
           title={
             viewProp === 'forgot_password'
               ? 'Reset Password'
@@ -112,6 +117,20 @@ export default async function SignIn({
               {searchParams.message || 'Your request was successful.'}
             </p>
           )}
+          {viewProp !== 'update_password' &&
+            viewProp !== 'forgot_password' &&
+            allowOauth && (
+              <>
+                <OauthSignIn />
+                <Separator
+                  text={
+                    viewProp === 'signup'
+                      ? 'or sign up with email'
+                      : 'or use email instead'
+                  }
+                />
+              </>
+            )}
           {viewProp === 'password_signin' && (
             <PasswordSignIn
               allowEmail={allowEmail}
@@ -138,14 +157,6 @@ export default async function SignIn({
           {viewProp === 'signup' && (
             <SignUp allowEmail={allowEmail} redirectMethod={redirectMethod} />
           )}
-          {viewProp !== 'update_password' &&
-            viewProp !== 'signup' &&
-            allowOauth && (
-              <>
-                <Separator text="Third-party sign-in" />
-                <OauthSignIn />
-              </>
-            )}
         </Card>
         <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground">
           <ShieldCheck aria-hidden="true" className="size-4 text-success" />

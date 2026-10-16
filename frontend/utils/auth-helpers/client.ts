@@ -1,7 +1,6 @@
 'use client';
 
 import { createClient } from '@/utils/supabase/client';
-import { type Provider } from '@supabase/supabase-js';
 import { getURL } from '@/utils/helpers';
 import { redirectToPath } from '@backend/auth/server';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
@@ -26,19 +25,16 @@ export async function handleRequest(
   }
 }
 
-export async function signInWithOAuth(e: React.FormEvent<HTMLFormElement>) {
-  // Prevent default form submission refresh
-  e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const provider = String(formData.get('provider')).trim() as Provider;
-
-  // Create client-side supabase client and call signInWithOAuth
+export async function signInWithGoogle() {
   const supabase = createClient();
-  const redirectURL = getURL('/auth/callback');
-  await supabase.auth.signInWithOAuth({
-    provider: provider,
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
     options: {
-      redirectTo: redirectURL
+      redirectTo: getURL('/auth/callback')
     }
   });
+
+  if (error) {
+    throw error;
+  }
 }
