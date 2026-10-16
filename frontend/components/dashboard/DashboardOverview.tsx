@@ -35,9 +35,9 @@ export default function DashboardOverview({
   return (
     <section className="grid gap-6">
       <PageHeader
-        title="Good morning"
-        description={`Here is what is happening at ${business.name} today.`}
-        action={<Badge variant="brand">Friday, 16 October</Badge>}
+        title="Overview"
+        description={`A snapshot of ${business.name}. Live booking data will appear here once booking is enabled.`}
+        action={<Badge variant="neutral">Preview data</Badge>}
       />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {data.stats.map((stat) => {

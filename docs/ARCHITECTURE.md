@@ -67,7 +67,8 @@ Dashboard metrics, bookings, customers, public demo availability, and platform
 admin lists are typed preview data in `frontend/utils/placeholders/`. Their data
 access functions are labeled `TODO(step-N)`. Booking actions only change local
 UI state; the public confirmation does not persist a booking or collect payment.
-The `/b/studio-bloom` route is sample content for review.
+The homepage schedule illustration and dashboard metrics are explicitly marked
+as sample/preview data. The `/b/studio-bloom` route is sample content for review.
 
 ## Current feature paths
 
