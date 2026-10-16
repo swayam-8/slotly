@@ -2,144 +2,155 @@
 
 ## Overview
 
-Slotly is a multi-tenant booking SaaS built with Next.js, TypeScript, Supabase,
-Stripe, and Tailwind CSS. Businesses will configure services, staff, and working
-hours. Customers will book available time slots and pay a deposit through Stripe.
+Slotly is a multi-tenant booking SaaS for service businesses, built with
+Next.js, TypeScript, Supabase, Stripe, and Tailwind CSS. Businesses manage
+services, staff, working hours, and time off. Customers will browse availability,
+book appointments, and pay deposits when booking support is implemented.
 
-The current application is the Next.js Subscription Payments starter: it provides
-Supabase authentication and Stripe subscription billing. Slotly's owner dashboard
-now manages services, staff, recurring working hours, time off, and business
-settings. Booking, slot generation, and deposit-payment operations have not been
-implemented. The initial Slotly tenant, service, staff, working-hours, time-off,
-customer, and booking tables are defined in migrations; existing files and
-conventions are retained as the product grows.
+The application builds on
+[vercel/nextjs-subscription-payments](https://github.com/vercel/nextjs-subscription-payments),
+reusing its Supabase authentication and Stripe subscription billing foundation.
+Booking persistence, slot generation, deposit payments, and live analytics are
+not implemented yet. Public booking and dashboard metrics are UI previews.
 
-This project is built on top of
-[vercel/nextjs-subscription-payments](https://github.com/vercel/nextjs-subscription-payments).
+## Repository layout
 
-## Planned folder structure
-
-Existing `app/`, `components/`, `utils/`, and `supabase/` folders remain in place.
-The current Step 3 management paths are:
+The package manager, lockfile, and shared documentation stay at the repository
+root. Package scripts run Next.js from `frontend/` and Supabase CLI commands from
+`backend/supabase/`.
 
 ```text
-app/dashboard/
-├── page.tsx                            # Overview placeholder
-├── services/page.tsx                   # Service management
-├── staff/page.tsx                      # Staff management
-├── staff/[id]/hours/page.tsx           # Weekly working-hours editor
-├── staff/[id]/time-off/page.tsx        # Time-off management
-└── settings/page.tsx                   # Business name and timezone
+frontend/
+├── app/                         # Next.js App Router pages and API routes
+├── components/
+│   ├── booking/                 # Customer-facing booking flow
+│   ├── dashboard/               # Dashboard shell and feature views
+│   └── ui/                      # Shared controls, auth, marketing, onboarding
+├── public/                      # Static assets and generated Open Graph images
+├── styles/                      # Global styles and design tokens
+├── utils/
+│   ├── dashboard/               # Browser-safe formatting and timezone helpers
+│   ├── placeholders/            # Typed sample data with TODO(step-N) markers
+│   └── supabase/client.ts       # Browser-side Supabase client
+├── types_db.ts                  # Generated Supabase database types
+├── middleware.ts                # Session refresh/request middleware
+└── next.config.js               # Next.js configuration, including backend source access
 
-components/dashboard/                   # Dashboard shell, shared context, and management UI
-utils/dashboard/                        # Authenticated actions, validation, money, and timezone helpers
-supabase/migrations/                    # Versioned schema and atomic dashboard operations
-supabase/tests/                         # RLS regression tests
+backend/
+├── auth/                        # Server-side authentication actions
+├── businesses/                  # Business membership, onboarding, and validation
+├── dashboard/                   # Authorized service/staff/settings actions
+├── lib/supabase/                # Server-side Supabase clients and queries
+├── stripe/                      # Stripe server configuration and actions
+├── fixtures/                    # Stripe CLI test fixtures
+├── schema.sql                   # Starter schema
+└── supabase/
+    ├── config.toml              # Supabase local development configuration
+    ├── migrations/              # Versioned schema and database operations
+    ├── tests/                   # SQL RLS regression tests
+    └── seed.sql                 # Local seed data
+
+docs/
+├── ARCHITECTURE.md
+└── PROGRESS.md
 ```
 
-The tree below shows future additions; route groups organize routes without
-changing their public URLs.
+### Frontend design system and placeholders
+
+The single brand accent is indigo (`#4F46E5`). Neutral surfaces, borders, status
+colors, and focus rings use CSS variables in `frontend/styles/main.css`, mapped
+in `frontend/tailwind.config.js`. Light and dark themes share those tokens. The
+UI uses the existing Inter/system sans-serif stack, consistent spacing, visible
+keyboard focus, and responsive layouts. No frontend dependency was added.
+
+Dashboard metrics, bookings, customers, public demo availability, and platform
+admin lists are typed preview data in `frontend/utils/placeholders/`. Their data
+access functions are labeled `TODO(step-N)`. Booking actions only change local
+UI state; the public confirmation does not persist a booking or collect payment.
+The `/b/studio-bloom` route is sample content for review.
+
+## Current feature paths
 
 ```text
-app/
-├── onboarding/page.tsx                 # Create the first business for a user
-├── (public)/
-│   └── [businessSlug]/
-│       ├── page.tsx                    # Public business page and service selection
-│       └── book/page.tsx               # Customer booking flow
-├── (dashboard)/
-│   └── businesses/[businessId]/
-│       ├── page.tsx                    # Business dashboard
-│       ├── services/page.tsx           # Manage services
-│       ├── staff/page.tsx              # Manage staff
-│       ├── hours/page.tsx              # Manage working hours
-│       ├── bookings/page.tsx           # View and manage bookings
-│       ├── customers/page.tsx          # View business customers
-│       └── settings/page.tsx           # Business, roles, and plan settings
-└── api/
-    ├── availability/route.ts           # Return available slots
-    ├── bookings/route.ts               # Create and manage bookings
-    └── webhooks/route.ts               # Existing Stripe webhook; extend for deposits
+frontend/app/
+├── page.tsx                     # Marketing homepage
+├── pricing/page.tsx             # Stripe-backed subscription pricing
+├── signin/[id]/page.tsx         # Authentication flows
+├── onboarding/page.tsx          # Business setup wizard
+├── dashboard/
+│   ├── page.tsx                 # Overview preview
+│   ├── bookings/                # Booking list preview
+│   ├── calendar/                # Schedule preview
+│   ├── customers/               # Customer list preview
+│   ├── services/                # Service management
+│   ├── staff/                   # Staff, working hours, and time off
+│   └── settings/                # Business settings and billing
+├── b/[slug]/                    # Public business booking preview
+└── admin/                       # Platform-admin preview
 
-components/
-├── booking/                            # Customer booking and slot-selection UI
-├── ui/Onboarding/                      # First-business setup form
-├── businesses/                         # Business profile and setup UI
-├── services/                           # Service management UI
-├── staff/                              # Staff and staff-service UI
-├── customers/                          # Business customer UI
-├── dashboard/                          # Shared business dashboard UI
-└── notifications/                      # In-app notification UI
-
-utils/
-├── businesses/                         # Membership lookup and onboarding validation/actions
-├── availability/                       # Availability and slot-generation logic
-├── payments/                           # Booking deposits and Stripe operations
-├── permissions/                        # Tenant membership and permission checks
-└── notifications/                      # Notification delivery helpers
-
-supabase/
-└── migrations/                         # Versioned schema changes (existing convention)
+backend/
+├── auth/                        # Auth actions used by frontend server components
+├── businesses/                  # Membership checks and onboarding actions
+├── dashboard/                   # Server actions and role authorization
+├── lib/supabase/                # Server clients, queries, and middleware refresh
+├── stripe/                      # Checkout, portal, and Stripe server configuration
+└── supabase/                    # Migrations and RLS tests
 ```
 
-- `app/(public)/[businessSlug]/` will hold tenant-facing pages addressed by a
-  business's public slug.
-- `app/(dashboard)/businesses/[businessId]/` will group authenticated,
-  tenant-scoped management pages while keeping their URLs readable.
-- `app/api/availability/` and `app/api/bookings/` will expose server-validated
-  availability and booking operations.
-- `app/api/webhooks/` already processes Stripe billing events; it will be extended
-  for deposit/payment events rather than replaced.
-- Each new `components/` subfolder separates feature UI in the same style as the
-  existing component library.
-- `utils/availability/` will calculate slots from working hours, exceptions, and
-  existing bookings. Slots are derived, not stored as permanent records.
-- `utils/businesses/` contains the onboarding checks and the membership lookup
-  used to route new and returning users.
-- `utils/payments/`, `utils/permissions/`, and `utils/notifications/` will keep
-  those server-side concerns distinct from UI and route handlers.
-- `supabase/migrations/` will continue to be the source of truth for schema
-  changes.
+Future availability, booking, payment, role, and notification logic belongs in
+`backend/availability/`, `backend/bookings/`, `backend/payments/`,
+`backend/permissions/`, and `backend/notifications/`. Tenant-facing UI belongs
+in feature folders under `frontend/components/`; its public URLs and authenticated
+dashboard routes remain under `frontend/app/`. Availability is derived from
+working hours, time off, and bookings rather than stored as slot rows.
 
-## Database tables
+## Planned database tables
 
-The initial Slotly data-model migration creates the tables marked **Step 2**.
-Other tables remain planned.
+| Table                                 | Purpose                                               | Status   |
+| ------------------------------------- | ----------------------------------------------------- | -------- |
+| `businesses`                          | Tenant profile, public slug, and settings             | Step 2   |
+| `business_members`                    | Users' business membership and role                   | Step 2   |
+| `services`                            | Business offerings, duration, price, and deposit      | Step 2   |
+| `staff`                               | Staff profile belonging to a business                 | Step 2   |
+| `working_hours`                       | Staff's recurring weekly local-time availability      | Step 2   |
+| `time_off`                            | Staff's dated unavailable periods                     | Step 2   |
+| `customers`                           | Customer contact details scoped to a business         | Step 2   |
+| `bookings`                            | Service, staff, customer, time range, and status      | Step 2   |
+| `stripe_customers`                    | Existing auth-user to Stripe-customer mapping         | Existing |
+| `products`, `prices`, `subscriptions` | Existing Stripe subscription billing data             | Existing |
+| `business_directory`                  | Public-safe business id, name, slug, and timezone     | Step 3   |
+| `staff_services`                      | Services each staff member can provide                | Planned  |
+| `payments`                            | Booking deposit amount, Stripe id, and payment status | Planned  |
+| `notifications`                       | Notification/outbox records and delivery state        | Planned  |
+| `roles`, `role_permissions`           | Optional configurable role permissions                | Planned  |
 
-| Table                | Purpose                                                                           | Status           |
-| -------------------- | --------------------------------------------------------------------------------- | ---------------- |
-| `businesses`         | Tenant/business profile, public slug, and settings.                               | Step 2           |
-| `business_members`   | Links authenticated users to businesses and their membership role.                | Step 2           |
-| `services`           | Services offered by a business, including duration and deposit settings.          | Step 2           |
-| `staff`              | Staff profiles belonging to a business.                                           | Step 2           |
-| `working_hours`      | Recurring weekly availability for a staff member.                                 | Step 2           |
-| `time_off`           | Dated unavailable periods for a staff member.                                     | Step 2           |
-| `customers`          | Customer details scoped to the business where they book.                          | Step 2           |
-| `bookings`           | Reserved service, staff, customer, time range, and booking status.                | Step 2           |
-| `stripe_customers`   | Existing starter mapping between auth users and Stripe customers.                 | Existing billing |
-| `business_directory` | Public-safe view of a business's id, name, slug, and timezone.                    | Step 3           |
-| `staff_services`     | Services each staff member is qualified to provide.                               | Planned          |
-| `payments`           | Stripe payment/deposit identifiers, amount, currency, and payment status.         | Planned          |
-| `notifications`      | Persistent notification/outbox records and delivery state.                        | Planned          |
-| `roles`              | Business-specific role definitions if built-in membership roles are insufficient. | Planned          |
-| `role_permissions`   | Permission grants associated with configurable roles.                             | Planned          |
+Working hours are recurring local clock times interpreted in the business
+timezone. Time off and booking instants use UTC `timestamptz`. A database
+exclusion constraint for overlapping bookings is intentionally deferred to
+Step 5.
 
-Availability slots will be calculated from working hours, time off, and bookings
-rather than stored in a separate slots table. The existing Stripe
-`stripe_customers`, `products`, `prices`, and `subscriptions` tables are part of
-the starter's platform billing and may be adapted for business-level plan limits
-as that requirement is implemented.
+## Database development
 
-Working-hour values are recurring local times interpreted in the business
-timezone. Time-off periods are stored as UTC `timestamptz` instants. The dashboard
-replaces a staff member's full weekly schedule with one authenticated database
-RPC call; RLS policies remain the authorization boundary for data access.
+`backend/supabase/migrations/` is the source of truth for schema changes. Local
+Supabase CLI state is ignored and must not be committed. Start/reset/test the
+local stack with the root scripts:
 
-Regenerate the TypeScript database types after applying local migrations with
-`pnpm supabase:generate-types`. This runs
-`npx supabase gen types typescript --local --schema public > types_db.ts`.
+```bash
+pnpm supabase:start
+pnpm supabase:reset
+npx supabase --workdir backend/supabase test db
+```
 
-Run dashboard utility tests with
-`node --experimental-strip-types --test utils/dashboard/dashboard.test.mjs`.
-The SQL RLS tests run with `npx supabase test db` against a running local
-Supabase stack.
+Regenerate TypeScript database types after applying migrations locally:
+
+```bash
+pnpm supabase:generate-types
+```
+
+This runs
+`npx supabase --workdir backend/supabase gen types typescript --local --schema public > frontend/types_db.ts`.
+Run browser-safe dashboard utility tests with:
+
+```bash
+node --experimental-strip-types --test frontend/utils/dashboard/dashboard.test.mjs
+```
